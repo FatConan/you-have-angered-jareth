@@ -1,82 +1,64 @@
 class Jareth{
-                constructor(){
-                    this.jarethStyle = {
-                        position: 'absolute',
-                        zIndex: 999999,
-                        height: 586,
-                        width: 450,
-                        background: 'url(./jareth.jpg) top left no-repeat'
-                    };
-                    this.thisMakesJarethAngry = (/cunt/gi);
-                    this.elementsArray = [].concat(
-                        document.getElementsByTagName('span'),
-                        document.getElementsByTagName('h1'),
-                        document.getElementsByTagName('h2'),
-                        document.getElementsByTagName('h3'),
-                        document.getElementsByTagName('h4'),
-                        document.getElementsByTagName('h5'),
-                        document.getElementsByTagName('p'),
-                        document.getElementsByTagName('a'),
-                        document.getElementsByTagName('li'));
-                }
+    constructor(){
+        this.thisMakesJarethAngry = (/cunt/gi);
+        this.body = document.getElementsByTagName("body")[0];
+        let replacements = [];
+        this.search(this.body, this.body.children, replacements);
 
-                triggerJareth(){
-                    let replacements = new Array();
-                    for(let i=0; i< this.elementsArray.length; i++){
-                        for(let j=0; j < this.elementsArray[i].length; j++){
-                            let element = this.elementsArray[i][j];
-                            let kids = element.childNodes;
-                            for(let k=0; k < kids.length; k++){
-                                let kid = kids[k];
-                                if(kid.nodeName === '#text'){
-                                    let remaining = kid.nodeValue;
-                                    let index = remaining.search(this.thisMakesJarethAngry);
-                                    if(index >= 0){
-                                        let fragment = document.createDocumentFragment();
-                                        while(index >= 0){
-                                            /* We found something */
-                                            let before = remaining.substr(0, index);
-                                            if(before.length > 0 ) fragment.appendChild(document.createTextNode(before));
-                                            let found = remaining.substr(index, 4);
-                                            if(found.length > 0){
-                                                let span = document.createElement('span');
-                                                span.setAttribute('class', 'jareth');
-                                                span.setAttribute('style', 'position: relative; background: yellow');
-                                                span.appendChild(document.createTextNode(found));
-                                                fragment.appendChild(span);
-                                            }
-                                            remaining = remaining.substr(index + 4);
-                                            index = remaining.search(this.thisMakesJarethAngry);
-                                        }
-                                        if(remaining.length > 0){
-                                            fragment.appendChild(document.createTextNode(remaining));
-                                        }
-                                        replacements.push({'element': element, 'node': kid, 'fragment': fragment});
-                                    }
-                                }
-                            }
-                        }
-                    }
+        for(let r=0; r < replacements.length; r++){
+            let rep = replacements[r];
+            rep.element.replaceChild(rep.fragment, rep.node);
+        }
 
-                    for(let r=0; r < replacements.length; r++){
-                        let rep = replacements[r];
-                        rep.element.replaceChild(rep.fragment, rep.node);
-                    }
-
-                    let jareths = $("span.jareth");
-                    let body = $("body");
-                    jareths.each(function(i, e){
-                        let $e = $(e);
-                        let xy = $e.position();
-                        let jareth = $('<div>');
-                        jareth.css(this.jarethStyle);
-                        body.append(jareth);
-                        jareth.css("top", xy.top-30).css("left", xy.left-220);
-                    }.bind(this));
-
-                    replacements = null;
-                }
+        let jareths = document.getElementsByTagName("SPAN");
+        for(let e of jareths){
+            if(e.matches(".angry-jareth")){
+                let position = e.getBoundingClientRect();
+                console.log(position);
+                let jareth = document.createElement("DIV");
+                jareth.setAttribute("style",
+                    `top:${position.top-20}px;left:${position.left-225}px;position:absolute;z-index:999999;height:586px;width:450px;background:url(./jareth.png) top left no-repeat`);
+                this.body.appendChild(jareth);
             }
+        }
 
-            const jarethDeployer = new Jareth();
-            jarethDeployer.triggerJareth();
+        replacements = null;
+    }
+
+    search(parent, elementList, replacements){
+        for(let e of elementList){
+            if(e.nodeName === "#text"){
+                let remaining = e.textContent;
+                let index = remaining.search(this.thisMakesJarethAngry);
+                if(index >= 0){
+                    let fragment = document.createDocumentFragment();
+                    while(index >= 0){
+                        /* We found something */
+                        let before = remaining.substr(0, index);
+                        if(before.length > 0 ) fragment.appendChild(document.createTextNode(before));
+                        let found = remaining.substr(index, 4);
+                        if(found.length > 0){
+                            let span = document.createElement('span');
+                            span.setAttribute('class', 'angry-jareth');
+                            span.setAttribute('style', 'position: relative; background: yellow');
+                            span.appendChild(document.createTextNode(found));
+                            fragment.appendChild(span);
+                        }
+                        remaining = remaining.substr(index + 4);
+                        index = remaining.search(this.thisMakesJarethAngry);
+                    }
+                    if(remaining.length > 0){
+                        fragment.appendChild(document.createTextNode(remaining));
+                    }
+                    replacements.push({'element': parent, 'node': e, 'fragment': fragment});
+                }
+            }else if(e.matches(".angry-jareth") || e.tagName === "SCRIPT" || e.tagName === "IMG" || e.tagName === "AUDIO"){
+                //No-OP
+            }else{
+                this.search(e, e.childNodes, replacements);
+            }
+        }
+    }
+}
+
+const jarethDeployer = new Jareth();
