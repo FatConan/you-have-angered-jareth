@@ -14,7 +14,6 @@ class Jareth{
         for(let e of jareths){
             if(e.matches(".angry-jareth")){
                 let position = e.getBoundingClientRect();
-                console.log(position);
                 let jareth = document.createElement("DIV");
                 jareth.setAttribute("style",
                     `top:${position.top-20}px;left:${position.left-225}px;position:absolute;z-index:999999;height:586px;width:450px;background:url(./jareth.png) top left no-repeat`);
